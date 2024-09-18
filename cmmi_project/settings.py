@@ -116,10 +116,24 @@ LOGIN_REDIRECT_URL = 'dashboard'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("PASSWORD"),
+        "HOST": os.getenv("HOST"),
+        "PORT": os.getenv("PORT"),
+        "TEST": {
+            "NAME": os.getenv("TEST_DB_NAME"),
+        },
     }
 }
 ACCOUNT_FORMS = {
@@ -179,3 +193,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # settings.py
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1048576000  # 1GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1048576000  # 1GB
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.getenv(
+            "CELERY_BROKER_LOCATION"
+        ),  # Replace with your Redis server details.
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}

@@ -13,3 +13,10 @@ class Companies(models.Model):  # Replace 'YourModel' with a suitable name
     linkedin_url = models.URLField()
     current_employee_estimate = models.IntegerField()
     total_employee_estimate = models.IntegerField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['domain']),
+            models.Index(fields=['year_founded']),
+        ]

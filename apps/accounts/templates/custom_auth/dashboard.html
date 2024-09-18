@@ -31,7 +31,7 @@
             <!-- Upload Data Section -->
             <div class="tab-pane fade show active" id="upload-data" role="tabpanel" aria-labelledby="upload-tab">
                 <h2>Upload Data</h2>
-                <form id="upload-form" action="/upload/" method="post" enctype="multipart/form-data">
+                <form id="upload-form" action="{% url 'file-upload' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                         <input type="file" name="data_file" class="form-control-file">
@@ -119,44 +119,45 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        // Handle form submission and call the API
-        $('#upload-form').on('submit', function (e) {
-            e.preventDefault();  // Prevent default form submission
 
-            var formData = new FormData();
-            var fileInput = $('#file-input')[0].files[0];
-            formData.append('file', fileInput);
+<script>
+    // Handle form submission and call the API
+$('#upload-form').on('submit', function (e) {
+    e.preventDefault();  // Prevent default form submission
 
-            // Show the progress bar
-            $('#progress-bar').show();
+    var formData = new FormData(this);  // Create FormData object from form
 
-            $.ajax({
-                xhr: function () {
-                    var xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener('progress', function (e) {
-                        if (e.lengthComputable) {
-                            var percentComplete = (e.loaded / e.total) * 100;
-                            $('#progress-bar .progress-bar').css('width', percentComplete + '%');
-                        }
-                    }, false);
-                    return xhr;
-                },
-                url: '/api/upload/',  // API endpoint for file upload
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    $('#progress-bar .progress-bar').css('width', '100%');
-                    alert(response.message);  // Inform the user of success
-                },
-                error: function (response) {
-                    alert('File upload failed!');
+    // Show the progress bar
+    $('#progress-bar').show();
+    $('#progress-bar .progress-bar').css('width', '0%');
+
+    $.ajax({
+        xhr: function () {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener('progress', function (e) {
+                if (e.lengthComputable) {
+                    var percentComplete = (e.loaded / e.total) * 100;
+                    $('#progress-bar .progress-bar').css('width', percentComplete + '%');
                 }
-            });
-        });
-    </script>
+            }, false);
+            return xhr;
+        },
+        url: $(this).attr('action'),  // Get the action URL from the form
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            $('#progress-bar .progress-bar').css('width', '100%');
+            alert(response.message);  // Inform the user of success
+        },
+        error: function (response) {
+            alert('File upload failed!');
+        }
+    });
+});
+
+</script>
 
 </body>
 </html>
