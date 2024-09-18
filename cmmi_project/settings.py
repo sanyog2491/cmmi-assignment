@@ -175,3 +175,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# settings.py
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1048576000  # 1GB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1048576000  # 1GB

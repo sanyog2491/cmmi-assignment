@@ -17,8 +17,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 User = get_user_model()
+
+@method_decorator(csrf_exempt, name='dispatch')
 class CustomLoginView(LoginView):
     template_name = 'custom_auth/login.html'  
 
