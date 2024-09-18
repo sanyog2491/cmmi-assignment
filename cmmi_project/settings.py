@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'dj_rest_auth',
     'allauth.socialaccount',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'apps.users_upload',
 ]
 
 SITE_ID = 1
@@ -124,7 +125,6 @@ DATABASES = {
 ACCOUNT_FORMS = {
     'reset_password': 'apps.accounts.views.CustomPasswordResetForm',
 }
-print('helll',os.getenv('EMAIL_BACKEND'))
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
