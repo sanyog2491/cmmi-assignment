@@ -28,7 +28,7 @@ class RegisterSerializer(serializers.Serializer):
         setup_user_email(request, user, [])
         return user
 
-class UserSerializer(serializers.Serializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'date_joined']  
+        fields = '__all__'

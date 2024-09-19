@@ -20,6 +20,8 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.response import Response
+from rest_framework import status
 
 User = get_user_model()
 
@@ -99,24 +101,24 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
 class UserView(APIView, PageNumberPagination):
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-    
+    authentication_classes = []  # or SessionAuthentication
+    permission_classes = []
     page_size = 10  # Customize how many users to return per page
 
     def get(self, request):
         """
         Handles GET requests to retrieve the list of users with pagination.
         """
-        users = User.objects.all()  # Fetch all users
+        users = User.objects.all()
+        print("Users before serialization:", users)
+        
         page = self.paginate_queryset(users, request, view=self)
         if page is not None:
             serializer = UserSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        else:
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self, request):
         """
         Handles POST requests to create a new user.
