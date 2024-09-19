@@ -128,3 +128,14 @@ class UserView(APIView, PageNumberPagination):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, user_id):
+        """
+        Handles DELETE requests to remove a specific user by ID.
+        """
+        try:
+            user = User.objects.get(id=user_id)
+            user.delete()
+            return Response({'detail': 'User deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)

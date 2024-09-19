@@ -271,7 +271,7 @@
         // Handle user removal
         $(document).on('click', '.remove-user', function () {
             const userId = $(this).data('id');
-
+        
             $.ajax({
                 url: `/api/users/${userId}/`,
                 type: 'DELETE',
