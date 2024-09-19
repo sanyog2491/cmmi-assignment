@@ -172,7 +172,6 @@
         });
     }
 
-    // Load localities into dropdowns
     function loadLocalities(type) {
         $.ajax({
             url: `/api/locality-dropdown/`,  // Assuming this endpoint provides localities
@@ -192,9 +191,11 @@
                     localities = data?.results?.countries || [];
                 }
     
-                // Populate the dropdown with the localities
+                // Populate the dropdown with valid localities (filter out null or empty values)
                 localities.forEach(function (locality) {
-                    $localitySelect.append(new Option(locality, locality));  // Assuming `locality` is the name
+                    if (locality) {  // Ensure locality is not null or empty
+                        $localitySelect.append(new Option(locality, locality));  // Assuming `locality` is the name
+                    }
                 });
             },
             error: function () {
