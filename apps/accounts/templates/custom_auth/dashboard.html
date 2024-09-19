@@ -38,7 +38,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Start Upload</button>
                 </form>
-                <div id="progress-bar" class="progress">
+                <div id="progress-bar" class="progress" style="display: none;">
                     <div class="progress-bar" role="progressbar"></div>
                 </div>
             </div>
@@ -46,7 +46,7 @@
             <!-- Query Builder Section -->
             <div class="tab-pane fade" id="query-builder" role="tabpanel" aria-labelledby="query-tab">
                 <h2>Query Builder</h2>
-                <form action="/query/" method="post">
+                <form id="query-form">
                     {% csrf_token %}
                     <div class="form-row">
                         <div class="form-group col-md-4">
@@ -57,7 +57,7 @@
                             <label for="industry">Industry</label>
                             <select name="industry" class="form-control" id="industry">
                                 <option>Select</option>
-                                <!-- Add Options Here -->
+                                <!-- Options will be populated dynamically -->
                             </select>
                         </div>
                         <div class="form-group col-md-4">
@@ -66,15 +66,21 @@
                         </div>
                         <div class="form-group col-md-4">
                             <label for="city">City</label>
-                            <input type="text" name="city" class="form-control" id="city">
+                            <select name="city" class="form-control" id="city">
+                                <option value="">Select City</option>
+                            </select>
                         </div>
                         <div class="form-group col-md-4">
                             <label for="state">State</label>
-                            <input type="text" name="state" class="form-control" id="state">
+                            <select name="state" class="form-control" id="state">
+                                <option value="">Select State</option>
+                            </select>
                         </div>
                         <div class="form-group col-md-4">
                             <label for="country">Country</label>
-                            <input type="text" name="country" class="form-control" id="country">
+                            <select name="country" class="form-control" id="country">
+                                <option value="">Select Country</option>
+                            </select>
                         </div>
                         <div class="form-group col-md-4">
                             <label for="employees_from">Employees (From)</label>
@@ -85,7 +91,7 @@
                             <input type="number" name="employees_to" class="form-control" id="employees_to">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Query Data</button>
+                    <button type="button" id="query-submit" class="btn btn-primary">Query Data</button>
                 </form>
                 <div id="query-results"></div>
             </div>
@@ -108,56 +114,168 @@
                             <span class="badge badge-success">Active</span>
                             <button class="btn btn-danger btn-sm float-right">Remove</button>
                         </li>
-                        <!-- Add more users here -->
                     </ul>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JS for Bootstrap and Progress Bar Handling -->
+    <!-- JS for Bootstrap and AJAX Handling -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script>
+        $('#upload-form').on('submit', function (e) {
+            e.preventDefault();  
 
-<script>
-    // Handle form submission and call the API
-$('#upload-form').on('submit', function (e) {
-    e.preventDefault();  // Prevent default form submission
+            var formData = new FormData(this);  
+        $('#progress-bar').show();
+        $('#progress-bar .progress-bar').css('width', '0%');
 
-    var formData = new FormData(this);  // Create FormData object from form
-
-    // Show the progress bar
-    $('#progress-bar').show();
-    $('#progress-bar .progress-bar').css('width', '0%');
-
-    $.ajax({
-        xhr: function () {
-            var xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener('progress', function (e) {
-                if (e.lengthComputable) {
-                    var percentComplete = (e.loaded / e.total) * 100;
-                    $('#progress-bar .progress-bar').css('width', percentComplete + '%');
-                }
-            }, false);
-            return xhr;
-        },
-        url: $(this).attr('action'),  // Get the action URL from the form
-        type: 'POST',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function (response) {
-            $('#progress-bar .progress-bar').css('width', '100%');
-            alert(response.message);  // Inform the user of success
-        },
-        error: function (response) {
-            alert('File upload failed!');
-        }
+        $.ajax({
+            xhr: function () {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        var percentComplete = (e.loaded / e.total) * 100;
+                        $('#progress-bar .progress-bar').css('width', percentComplete + '%');
+                    }
+                }, false);
+                return xhr;
+            },
+            url: $(this).attr('action'),  
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                $('#progress-bar .progress-bar').css('width', '100%');
+                alert(response.message);  
+            },
+            error: function (response) {
+                alert('File upload failed!');
+            }
+        });
     });
-});
 
+    // Load industries into dropdown
+    function loadIndustries(offset = 0, limit = 10) {
+        $.ajax({
+            url: '/api/industry-dropdown/',
+            data: { offset: offset, limit: limit },
+            success: function (data) {
+                const $industrySelect = $('#industry');
+                data?.results?.forEach(function (industry) {
+                    $industrySelect.append(new Option(industry, industry));
+                });
+            }
+        });
+    }
+
+    // Load localities into dropdowns
+    function loadLocalities(type) {
+        $.ajax({
+            url: `/api/locality-dropdown/`,  // Assuming this endpoint provides localities
+            data: { type: type },
+            success: function (data) {
+                const $localitySelect = $('#' + type);  // Select the correct element (city, state, or country)
+                $localitySelect.empty();  // Clear any existing options
+                $localitySelect.append(new Option(`Select ${type.charAt(0).toUpperCase() + type.slice(1)}`, ""));  // Add default option
+    
+                // Access the appropriate locality array from the results object
+                let localities = [];
+                if (type === 'city') {
+                    localities = data?.results?.cities || [];
+                } else if (type === 'state') {
+                    localities = data?.results?.states || [];
+                } else if (type === 'country') {
+                    localities = data?.results?.countries || [];
+                }
+    
+                // Populate the dropdown with the localities
+                localities.forEach(function (locality) {
+                    $localitySelect.append(new Option(locality, locality));  // Assuming `locality` is the name
+                });
+            },
+            error: function () {
+                console.log(`Failed to load ${type} data`);
+            }
+        });
+    }
+
+    // Handle query form submission
+    $('#query-submit').on('click', function () {
+        const formData = {};
+    
+        // Get keyword input value
+        const keyword = $('#keyword').val();
+        if (keyword) {
+            formData.keyword = keyword;
+        }
+    
+        // Get industry dropdown value
+        const industry = $('#industry').val();
+        if (industry && industry !== 'Select') {
+            formData.industry = industry;
+        }
+    
+        // Get year dropdown value
+        const year = $('#year').val();
+        if (year && year !== 'Select') {
+            formData.year = year;
+        }
+    
+        // Get city dropdown value
+        const city = $('#city').val();
+        if (city && city !== 'Select') {
+            formData.city = city;
+        }
+    
+        // Get state dropdown value
+        const state = $('#state').val();
+        if (state && state !== 'Select') {
+            formData.state = state;
+        }
+    
+        // Get country dropdown value
+        const country = $('#country').val();
+        if (country && country !== 'Select') {
+            formData.country = country;
+        }
+    
+        // Get employees_from input value
+        const employees_from = $('#employees_from').val();
+        if (employees_from) {
+            formData.employees_from = employees_from;
+        }
+    
+        // Get employees_to input value
+        const employees_to = $('#employees_to').val();
+        if (employees_to) {
+            formData.employees_to = employees_to;
+        }
+    
+        console.log("formData", formData);
+    
+        // Make the AJAX request with the filtered formData
+        $.ajax({
+            url: '/api/query-builder/',
+            type: 'GET',
+            data: formData,
+            success: function (response) {
+                $('#query-results').text(`Record Count: ${response.count}`);
+            },
+            error: function () {
+                $('#query-results').text('An error occurred.');
+            }
+        });
+    });
+
+    // Initial load of industries and localities
+    loadIndustries();
+    loadLocalities('city');
+    loadLocalities('state');
+    loadLocalities('country');
 </script>
-
 </body>
 </html>

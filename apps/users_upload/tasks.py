@@ -10,42 +10,72 @@ from apps.users_upload.models import Companies
 import pandas as pd
 import os
 
-@shared_task(bind=True)
-def process_file(self, file_path):
-    try:
-        # Initialize progress
-        total_rows = sum(1 for row in open(file_path))  # Total number of rows in the file
-        processed_rows = 0
-        cache.set(f'file_progress_{file_path}', 0)
-        
-        file_extension = file_path.split('.')[-1].lower()
-        if file_extension == 'csv':
-            df = pd.read_csv(file_path)
-        elif file_extension in ['xls', 'xlsx']:
-            df = pd.read_excel(file_path)
-        else:
-            raise ValueError("Unsupported file format")
 
-        for _, row in df.iterrows():
-            Companies.objects.create(
-                code=row['code'],
-                name=row['name'],
-                domain=row['domain'],
-                year_founded=row['year founded'],
-                industry=row['industry'],
-                size_range=row['size range'],
-                locality=row['locality'],
-                country=row['country'],
-                linkedin_url=row['linkedin url'],
-                current_employee_estimate=row['current employee estimate'],
-                total_employee_estimate=row['total employee estimate'],
-            )
-            processed_rows += 1
-            progress = (processed_rows / total_rows) * 100
-            cache.set(f'file_progress_{file_path}', progress)
+import pandas as pd
+import openpyxl
+from celery import shared_task
+from apps.users_upload.models import Companies
+
+@shared_task
+def process_file(file_path):
+    file_extension = file_path.split('.')[-1].lower()
+    
+    chunk_size = 1000  
+
+    if file_extension == 'csv':
+        chunk_iter = pd.read_csv(file_path, chunksize=chunk_size)
         
-        # Final update to ensure progress is 100%
-        cache.set(f'file_progress_{file_path}', 100)
-    except Exception as e:
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error processing file: {e}")
+        for chunk in chunk_iter:
+            process_chunk(chunk)
+
+    elif file_extension in ['xls', 'xlsx']:
+        wb = openpyxl.load_workbook(file_path, read_only=True)
+        sheet = wb.active
+        rows = sheet.iter_rows(values_only=True)
+
+        headers = next(rows)  
+        expected_columns = [
+            'code', 'name', 'domain', 'year founded', 'industry',
+            'size range', 'locality', 'country', 'linkedin url',
+            'current employee estimate', 'total employee estimate'
+        ]
+
+        if list(headers) != expected_columns:
+            raise ValueError(f"File columns do not match expected columns. Found columns: {list(headers)}")
+
+        chunk = []
+        for row in rows:
+            chunk.append(row)
+            if len(chunk) >= chunk_size:
+                process_chunk(chunk, headers)
+                chunk = []  # Reset chunk
+
+        if chunk:  
+            process_chunk(chunk, headers)
+    
+    else:
+        raise ValueError("Unsupported file format")
+
+
+def process_chunk(chunk, headers=None):
+    """Process and insert a chunk of data into the database."""
+    records = []
+    for row in chunk:
+        row_data = dict(zip(headers, row))
+        records.append(
+            Companies(
+                code=row_data['code'],
+                name=row_data['name'],
+                domain=row_data['domain'],
+                year_founded=row_data['year founded'],
+                industry=row_data['industry'],
+                size_range=row_data['size range'],
+                locality=row_data['locality'],
+                country=row_data['country'],
+                linkedin_url=row_data['linkedin url'],
+                current_employee_estimate=row_data['current employee estimate'],
+                total_employee_estimate=row_data['total employee estimate']
+            )
+        )
+    
+    Companies.objects.bulk_create(records)
