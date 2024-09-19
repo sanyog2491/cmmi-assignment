@@ -18,15 +18,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: your_db_name
-      POSTGRES_USER: your_db_user
-      POSTGRES_PASSWORD: your_db_password
+      POSTGRES_DB: cmmi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
   nginx:
     image: nginx:latest
     volumes:
-      - ./nginx:/etc/nginx/conf.d
-    ports:
+      - ./nginx:/etc/nginx/sites-available/cmmi
       - "8090:8090"
     depends_on:
       - web
