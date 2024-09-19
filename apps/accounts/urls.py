@@ -11,6 +11,5 @@ urlpatterns = [
     path('accounts/password/reset/complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('accounts/logout/', custom_logout_view, name='account_logout'), 
     path('api/users/', UserView.as_view(), name='user_list'), 
-    path('api/users/<int:user_id>/', UserView.as_view(), name='user_detail'),  # Handles GET, PUT, PATCH, DELETE
-
+    path('api/users/<int:user_id>/', UserView.as_view(), name='user_detail'),
 ]

@@ -18,6 +18,19 @@ from apps.users_upload.models import Companies
 
 @shared_task
 def process_file(file_path):
+    """
+    Process a file and insert its data into the database.
+
+    This function handles CSV and XLSX file formats. It reads the file in chunks 
+    and processes each chunk to extract and insert data into the database.
+
+    Parameters:
+        file_path (str): The path to the file to be processed.
+
+    Raises:
+        ValueError: If the file format is unsupported or if the columns in an 
+                    XLSX file do not match the expected columns.
+    """
     file_extension = file_path.split('.')[-1].lower()
     
     chunk_size = 1000  
@@ -58,7 +71,17 @@ def process_file(file_path):
 
 
 def process_chunk(chunk, headers=None):
-    """Process and insert a chunk of data into the database."""
+    """
+    Process and insert a chunk of data into the database.
+
+    This function converts rows of data into `Companies` model instances and 
+    performs a bulk insert into the database.
+
+    Parameters:
+        chunk (list of tuples): The chunk of data to be processed.
+        headers (list of str, optional): The headers for XLSX files. Used to map 
+                                         column names to data fields. Defaults to None.
+    """    
     records = []
     for row in chunk:
         row_data = dict(zip(headers, row))
