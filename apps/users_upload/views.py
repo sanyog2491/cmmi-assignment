@@ -37,7 +37,6 @@ class QueryBuilderView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Extract query parameters
         keyword = request.query_params.get('keyword', '')
         industry = request.query_params.get('industry', '')
         year_founded = request.query_params.get('year_founded', '')
@@ -49,7 +48,7 @@ class QueryBuilderView(APIView):
         
         query = Companies.objects.all()
         print("keyword",keyword)
-        # Filter by keyword (search across multiple columns)
+        print("industry",industry)
         if keyword:
             query = query.filter(
                 Q(code__icontains=keyword) |
@@ -62,6 +61,7 @@ class QueryBuilderView(APIView):
 
         # Filter by industry
         if industry:
+            
             query = query.filter(name=industry)
             print('querys',query)
 
