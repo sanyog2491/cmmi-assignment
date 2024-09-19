@@ -52,10 +52,15 @@ nav ul li {
     margin: 0 10px;
 }
 
+
 nav ul li a {
     text-decoration: none;
     font-weight: bold;
     color: black;
+}
+.custom-scroll {
+    max-height: 200px;  /* Adjust the height for the dropdown */
+    overflow-y: auto;   /* Enables scrolling when content overflows */
 }
 
 form {
@@ -291,4 +296,11 @@ h2 {
     .form-group {
         width: 100%;
     }
+}
+
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;  /* Adjust height as needed */
+    overflow-x: hidden;
+    overflow-y: auto;   /* Enable vertical scroll */
 }
