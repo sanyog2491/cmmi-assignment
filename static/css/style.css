@@ -1,0 +1,306 @@
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"], input[type="password"] {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+nav ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: space-around;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+
+nav ul li a {
+    text-decoration: none;
+    font-weight: bold;
+    color: black;
+}
+.custom-scroll {
+    max-height: 200px;  /* Adjust the height for the dropdown */
+    overflow-y: auto;   /* Enables scrolling when content overflows */
+}
+
+form {
+    margin: 20px 0;
+}
+
+#progress-bar {
+    width: 100%;
+    height: 25px;
+    background-color: lightblue;
+}
+
+#user-list ul {
+    list-style-type: none;
+}
+
+#user-list ul li {
+    margin: 10px 0;
+}
+    
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+}
+.success-message {
+    color: green;
+}
+
+/* General styles */
+body {
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
+}
+
+h2 {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Container and layout */
+.container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Tabs customization */
+.nav-tabs .nav-link.active {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+}
+
+.nav-tabs .nav-link {
+    color: #007bff;
+    border-radius: 0;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: #f0f0f0;
+    color: #007bff;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Forms */
+.form-group label {
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* Tables and lists */
+.list-group-item {
+    background-color: #f9f9f9;
+    border: none;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.list-group-item .btn-danger {
+    background-color: #dc3545;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.list-group-item .btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Query Builder specific styles */
+#query-builder .form-row {
+    margin-bottom: 20px;
+}
+
+#query-results {
+    margin-top: 20px;
+}
+
+/* Progress bar (if you want to show some progress) */
+#progress-bar {
+    margin-top: 20px;
+}
+
+#progress-bar .progress {
+    height: 20px;
+    background-color: #f0f0f0;
+}
+
+#progress-bar .progress-bar {
+    background-color: #007bff;
+    width: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-group {
+        width: 100%;
+    }
+}
+
+/* General styles */
+body {
+    background-color: #f8f9fa; /* Light background */
+    font-family: 'Arial', sans-serif;
+}
+
+h2 {
+    font-weight: 700;
+    color: #343a40;
+}
+
+/* Container and layout */
+.container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-top: 20px;
+}
+
+/* Tabs customization */
+.nav-tabs .nav-link.active {
+    background-color: #28a745; /* Active tab color to match your image */
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.nav-tabs .nav-link {
+    color: #28a745; /* Inactive tab text color */
+    border-radius: 0;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: #e9ecef;
+    color: #28a745;
+}
+
+/* Buttons */
+.btn-primary, .btn-danger {
+    background-color: #007bff;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover, .btn-danger:hover {
+    background-color: #0056b3;
+}
+
+/* Forms */
+.form-group label {
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* List Styling */
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+/* Progress Bar */
+#progress-bar .progress {
+    height: 25px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#progress-bar .progress-bar {
+    background-color: #007bff;
+    width: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-group {
+        width: 100%;
+    }
+}
+
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;  /* Adjust height as needed */
+    overflow-x: hidden;
+    overflow-y: auto;   /* Enable vertical scroll */
+}
