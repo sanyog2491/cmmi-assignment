@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CustomLoginView
+from .views import CustomLoginView,custom_logout_view,UserView
 from apps.accounts import views
 from django.contrib.auth import views as auth_views
 
@@ -9,5 +9,6 @@ urlpatterns = [
     path('accounts/password/reset/',views.CustomForgotPasswordView.as_view(),name='forgotpassword'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('accounts/password/reset/complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    
+    path('accounts/logout/', custom_logout_view, name='account_logout'),  # Override the allauth logout URL
+    path('api/users/', UserView.as_view(), name='user_list'),  # Correct name for user listing
 ]

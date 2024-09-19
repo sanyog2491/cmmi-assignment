@@ -55,10 +55,10 @@
                         </div>
                         <div class="form-group col-md-4">
                             <label for="industry">Industry</label>
-                            <select name="industry" class="form-control" id="industry">
-                                <option>Select</option>
-                                <!-- Options will be populated dynamically -->
-                            </select>
+                                <label for="industry">Industry</label>
+                                <select id="industry" class="form-control custom-scroll" multiple>
+                                    <!-- Options will be dynamically loaded here via JavaScript -->
+                                </select>
                         </div>
                         <div class="form-group col-md-4">
                             <label for="year">Year Founded</label>
@@ -125,158 +125,179 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        $('#upload-form').on('submit', function (e) {
-            e.preventDefault();  
-
-            var formData = new FormData(this);  
-        $('#progress-bar').show();
-        $('#progress-bar .progress-bar').css('width', '0%');
-
-        $.ajax({
-            xhr: function () {
-                var xhr = new window.XMLHttpRequest();
-                xhr.upload.addEventListener('progress', function (e) {
-                    if (e.lengthComputable) {
-                        var percentComplete = (e.loaded / e.total) * 100;
-                        $('#progress-bar .progress-bar').css('width', percentComplete + '%');
-                    }
-                }, false);
-                return xhr;
-            },
-            url: $(this).attr('action'),  
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function (response) {
-                $('#progress-bar .progress-bar').css('width', '100%');
-                alert(response.message);  
-            },
-            error: function (response) {
-                alert('File upload failed!');
-            }
-        });
-    });
-
-    // Load industries into dropdown
-    function loadIndustries(offset = 0, limit = 10) {
-        $.ajax({
-            url: '/api/industry-dropdown/',
-            data: { offset: offset, limit: limit },
-            success: function (data) {
-                const $industrySelect = $('#industry');
-                data?.results?.forEach(function (industry) {
-                    $industrySelect.append(new Option(industry, industry));
-                });
-            }
-        });
-    }
-
-    function loadLocalities(type) {
-        $.ajax({
-            url: `/api/locality-dropdown/`,  // Assuming this endpoint provides localities
-            data: { type: type },
-            success: function (data) {
-                const $localitySelect = $('#' + type);  // Select the correct element (city, state, or country)
-                $localitySelect.empty();  // Clear any existing options
-                $localitySelect.append(new Option(`Select ${type.charAt(0).toUpperCase() + type.slice(1)}`, ""));  // Add default option
+            let industryPage = 1;
+            let isLoadingIndustries = false;
     
-                // Access the appropriate locality array from the results object
-                let localities = [];
-                if (type === 'city') {
-                    localities = data?.results?.cities || [];
-                } else if (type === 'state') {
-                    localities = data?.results?.states || [];
-                } else if (type === 'country') {
-                    localities = data?.results?.countries || [];
+            $('#upload-form').on('submit', function (e) {
+                e.preventDefault();  
+    
+                var formData = new FormData(this);  
+            $('#progress-bar').show();
+            $('#progress-bar .progress-bar').css('width', '0%');
+    
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener('progress', function (e) {
+                        if (e.lengthComputable) {
+                            var percentComplete = (e.loaded / e.total) * 100;
+                            $('#progress-bar .progress-bar').css('width', percentComplete + '%');
+                        }
+                    }, false);
+                    return xhr;
+                },
+                url: $(this).attr('action'),  
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    $('#progress-bar .progress-bar').css('width', '100%');
+                    alert(response.message);  
+                },
+                error: function (response) {
+                    alert('File upload failed!');
                 }
+            });
+        });
     
-                // Populate the dropdown with valid localities (filter out null or empty values)
-                localities.forEach(function (locality) {
-                    if (locality) {  // Ensure locality is not null or empty
-                        $localitySelect.append(new Option(locality, locality));  // Assuming `locality` is the name
+    
+        // Load industries into dropdown
+        function loadIndustries(offset = 0, limit = 10) {
+            if (isLoadingIndustries) return;  // Prevent multiple simultaneous requests
+            isLoadingIndustries = true;
+            
+            $.ajax({
+                url: `/api/industry-dropdown/?page=${industryPage}`,  // Use page parameter for pagination
+                success: function (data) {
+                    const $industrySelect = $('#industry');
+                    data?.results?.forEach(function (industry) {
+                        $industrySelect.append(new Option(industry, industry));
+                    });
+                    industryPage++;  // Increment the page for the next load
+                    isLoadingIndustries = false;
+                },
+                error: function () {
+                    isLoadingIndustries = false;
+                    console.log('Failed to load more industries');
+                }
+            });
+        }
+    
+        $('#industry').on('scroll', function () {
+            const $industrySelect = $(this);
+        
+            // Check if scroll is at the bottom
+            if ($industrySelect[0].scrollTop + $industrySelect.outerHeight() >= $industrySelect[0].scrollHeight) {
+                loadIndustries();  // Load next batch of industries
+            }
+        });
+    
+        function loadLocalities(type) {
+            $.ajax({
+                url: `/api/locality-dropdown/`,  // Assuming this endpoint provides localities
+                data: { type: type },
+                success: function (data) {
+                    const $localitySelect = $('#' + type);  // Select the correct element (city, state, or country)
+                    $localitySelect.empty();  // Clear any existing options
+                    $localitySelect.append(new Option(`Select ${type.charAt(0).toUpperCase() + type.slice(1)}`, ""));  // Add default option
+        
+                    // Access the appropriate locality array from the results object
+                    let localities = [];
+                    if (type === 'city') {
+                        localities = data?.results?.cities || [];
+                    } else if (type === 'state') {
+                        localities = data?.results?.states || [];
+                    } else if (type === 'country') {
+                        localities = data?.results?.countries || [];
                     }
-                });
-            },
-            error: function () {
-                console.log(`Failed to load ${type} data`);
+        
+                    // Populate the dropdown with valid localities (filter out null or empty values)
+                    localities.forEach(function (locality) {
+                        if (locality) {  // Ensure locality is not null or empty
+                            $localitySelect.append(new Option(locality, locality));  // Assuming `locality` is the name
+                        }
+                    });
+                },
+                error: function () {
+                    console.log(`Failed to load ${type} data`);
+                }
+            });
+        }
+    
+        // Handle query form submission
+        $('#query-submit').on('click', function () {
+            const formData = {};
+        
+            // Get keyword input value
+            const keyword = $('#keyword').val();
+            if (keyword) {
+                formData.keyword = keyword;
             }
-        });
-    }
-
-    // Handle query form submission
-    $('#query-submit').on('click', function () {
-        const formData = {};
-    
-        // Get keyword input value
-        const keyword = $('#keyword').val();
-        if (keyword) {
-            formData.keyword = keyword;
-        }
-    
-        // Get industry dropdown value
-        const industry = $('#industry').val();
-        if (industry && industry !== 'Select') {
-            formData.industry = industry;
-        }
-    
-        // Get year dropdown value
-        const year = $('#year').val();
-        if (year && year !== 'Select') {
-            formData.year = year;
-        }
-    
-        // Get city dropdown value
-        const city = $('#city').val();
-        if (city && city !== 'Select') {
-            formData.city = city;
-        }
-    
-        // Get state dropdown value
-        const state = $('#state').val();
-        if (state && state !== 'Select') {
-            formData.state = state;
-        }
-    
-        // Get country dropdown value
-        const country = $('#country').val();
-        if (country && country !== 'Select') {
-            formData.country = country;
-        }
-    
-        // Get employees_from input value
-        const employees_from = $('#employees_from').val();
-        if (employees_from) {
-            formData.employees_from = employees_from;
-        }
-    
-        // Get employees_to input value
-        const employees_to = $('#employees_to').val();
-        if (employees_to) {
-            formData.employees_to = employees_to;
-        }
-    
-        console.log("formData", formData);
-    
-        // Make the AJAX request with the filtered formData
-        $.ajax({
-            url: '/api/query-builder/',
-            type: 'GET',
-            data: formData,
-            success: function (response) {
-                $('#query-results').text(`Record Count: ${response.count}`);
-            },
-            error: function () {
-                $('#query-results').text('An error occurred.');
+        
+            // Get industry dropdown value
+            const industry = $('#industry').val();
+            if (industry && industry !== 'Select') {
+                formData.industry = industry;
             }
+        
+            // Get year dropdown value
+            const year = $('#year').val();
+            if (year && year !== 'Select') {
+                formData.year = year;
+            }
+        
+            // Get city dropdown value
+            const city = $('#city').val();
+            if (city && city !== 'Select') {
+                formData.city = city;
+            }
+        
+            // Get state dropdown value
+            const state = $('#state').val();
+            if (state && state !== 'Select') {
+                formData.state = state;
+            }
+        
+            // Get country dropdown value
+            const country = $('#country').val();
+            if (country && country !== 'Select') {
+                formData.country = country;
+            }
+        
+            // Get employees_from input value
+            const employees_from = $('#employees_from').val();
+            if (employees_from) {
+                formData.employees_from = employees_from;
+            }
+        
+            // Get employees_to input value
+            const employees_to = $('#employees_to').val();
+            if (employees_to) {
+                formData.employees_to = employees_to;
+            }
+        
+            console.log("formData", formData);
+        
+            // Make the AJAX request with the filtered formData
+            $.ajax({
+                url: '/api/query-builder/',
+                type: 'GET',
+                data: formData,
+                success: function (response) {
+                    $('#query-results').text(`Record Count: ${response.count}`);
+                },
+                error: function () {
+                    $('#query-results').text('An error occurred.');
+                }
+            });
         });
-    });
-
-    // Initial load of industries and localities
-    loadIndustries();
-    loadLocalities('city');
-    loadLocalities('state');
-    loadLocalities('country');
-</script>
+    
+        // Initial load of industries and localities
+        loadIndustries();
+        loadLocalities('city');
+        loadLocalities('state');
+        loadLocalities('country');
+    </script>
 </body>
 </html>

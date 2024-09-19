@@ -7,24 +7,34 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
-
-from django.contrib.auth import get_user_model
+from apps.accounts.serializers import UserSerializer
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
 from django.conf import settings
-from django.core.mail import send_mail
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
 
 User = get_user_model()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomLoginView(LoginView):
-    template_name = 'custom_auth/login.html'  
+    template_name = 'custom_auth/login.html'
+      
+@login_required
+def dashboard_view(request):
+    return render(request, 'custom_auth/dashboard.html')
+
+def custom_logout_view(request):
+    logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect(reverse('account_login')) 
 
 class CustomPasswordResetForm(ResetPasswordForm):
     def clean_email(self):
@@ -85,9 +95,34 @@ class CustomForgotPasswordView(PasswordResetView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
+from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
+
+class UserView(APIView, PageNumberPagination):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     
-@login_required
-def dashboard_view(request):
-    return render(request, 'custom_auth/dashboard.html')
+    page_size = 10  # Customize how many users to return per page
 
+    def get(self, request):
+        """
+        Handles GET requests to retrieve the list of users with pagination.
+        """
+        users = User.objects.all()  # Fetch all users
+        page = self.paginate_queryset(users, request, view=self)
+        if page is not None:
+            serializer = UserSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """
+        Handles POST requests to create a new user.
+        """
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

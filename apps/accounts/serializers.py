@@ -27,3 +27,8 @@ class RegisterSerializer(serializers.Serializer):
         user.save()
         setup_user_email(request, user, [])
         return user
+
+class UserSerializer(serializers.Serializer):
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email', 'date_joined']  
